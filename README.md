@@ -1,7 +1,9 @@
 # LaCAM(*) + PIBT Python Implementation
 
 ## PIBT Algorithm
+### Journal Version
 ![](pics/pibt_journal.png)
+### Paper Version
 ![](pics/pibt_paper.png)
 
 ## LaCAM Algorithm
@@ -18,3 +20,5 @@
 ## Credits
 
 - [github | py-lacam](https://github.com/Kei18/py-lacam/tree/pibt)
+
+

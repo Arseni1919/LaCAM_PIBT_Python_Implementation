@@ -50,6 +50,41 @@ class Node:
         return {'x': self.x, 'y': self.y, 'neighbours': self.neighbours}
 
 
+class AgentAlg:
+    def __init__(self, num: int, start_node: Node, goal_node: Node):
+        self.num = num
+        self.name = f'agent_{num}'
+        self.start_node: Node = start_node
+        self.start_node_name: str = self.start_node.xy_name
+        self.curr_node: Node = start_node
+        self.curr_node_name: str = self.curr_node.xy_name
+        self.goal_node: Node = goal_node
+        self.goal_node_name: str = self.goal_node.xy_name
+        self.path: List[Node] | None = [self.start_node]
+        self.init_priority: float = random.random()
+        self.priority: float = self.init_priority
+
+    @property
+    def path_names(self):
+        return [n.xy_name for n in self.path]
+
+    def update_curr_node(self, i_time):
+        if i_time >= len(self.path):
+            self.curr_node = self.path[-1]
+            return
+        self.curr_node = self.path[i_time]
+
+    def __str__(self):
+        return self.name
+
+    def __lt__(self, other: Self):
+        return self.priority < other.priority
+
+    def __hash__(self):
+        return hash(self.num)
+
+    def __eq__(self, other):
+        return self.num == other.num
 # -------------------------------------------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -374,10 +409,8 @@ def plot_step_in_env(ax, info):
     if 'img_dir' in info:
         img_dir = info['img_dir']
         title_str += f'Map: {img_dir[:-4]}\n '
-    if 'n_agents' in info:
-        n_agents = info['n_agents']
-        title_str += f'{n_agents} agents '
     if 'i' in info:
         i = info['i']
         title_str += f'(iteration: {i + 1})'
+    title_str += f'{len(agents)} agents '
     ax.set_title(title_str)

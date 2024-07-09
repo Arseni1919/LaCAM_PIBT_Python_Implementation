@@ -59,18 +59,16 @@ def get_agent_k(
 
 def there_is_ec(
         agent_i: AgentAlg,
-        nei_node: Node,
+        node_to: Node,
         config_from: Dict[str, Node],
         config_to: Dict[str, Node],
 ) -> bool:
     node_from = config_from[agent_i.name]
-    for other_name, other_f_node in config_from.items():
-        if other_name == agent_i.name:
+    for other_name, other_node_from in config_from.items():
+        if other_name == agent_i.name or other_name not in config_to:
             continue
-        if other_name not in config_to:
-            continue
-        other_t_node = config_to[other_name]
-        if other_f_node == nei_node and other_t_node == node_from:
+        other_node_to = config_to[other_name]
+        if other_node_from == node_to and other_node_to == node_from:
             return True
     return False
 

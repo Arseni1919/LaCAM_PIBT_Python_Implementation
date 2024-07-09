@@ -141,24 +141,21 @@ def get_new_config(
 ) -> Dict[str, Node] | None:
     # setup next configuration
     config_from: Dict[str, Node] = N.config
+    occupied_from: Dict[str, AgentAlg] = {v.xy_name: agents_dict[k] for k, v in N.config.items()}
     config_to: Dict[str, Node] = {}
+    occupied_to: Dict[str, AgentAlg] = {}
     for k in range(C.depth):
-        config_to[C.who_list[k].name] = C.where_list[k]
-
-    # prep conf check
-    for agent1, agent2 in combinations(N.order, 2):
-        node_from_1 = config_from[agent1.name]
-        node_from_2 = config_from[agent2.name]
-        if node_from_1 == node_from_2:
+        agent = C.who_list[k]
+        node = C.where_list[k]
+        config_to[agent.name] = node
+        # vc
+        if node.xy_name in config_to:
             return None
-        if agent1.name in config_to and agent2.name in config_to:
-            node_to_1 = config_to[agent1.name]
-            node_to_2 = config_to[agent2.name]
-            if node_to_1 == node_to_2:
-                return None
-            edge1 = (node_from_1.x, node_from_1.y, node_to_1.x, node_to_1.y)
-            edge2 = (node_to_2.x, node_to_2.y, node_from_2.x, node_from_2.y)
-            if edge1 == edge2:
+        occupied_to[node.xy_name] = agent
+        # ec
+        if node.xy_name in occupied_from:
+            other_agent = occupied_from[node.xy_name]
+            if other_agent != agent and other_agent.name in config_to and config_to[other_agent.name] == config_from[agent.name]:
                 return None
 
     # apply PIBT

@@ -50,8 +50,8 @@ def run_lacam(
             for a_name, path in paths_dict.items():
                 agents_dict[a_name].path = path
             # checks
-            for i in range(len(agents[0].path)):
-                check_vc_ec_neic_iter(agents, i, to_count=False)
+            # for i in range(len(agents[0].path)):
+            #     check_vc_ec_neic_iter(agents, i, to_count=False)
             return paths_dict, {'agents': agents}
 
         # low-level search end

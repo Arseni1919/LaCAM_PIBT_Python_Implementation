@@ -14,7 +14,7 @@ def run_lacam_star(
         h_dict: Dict[str, np.ndarray],
         map_dim: Tuple[int, int],
         params: Dict
-) -> None | Tuple[Dict[str, List[Node]], Dict]:
+) -> Tuple[None, Dict] | Tuple[Dict[str, List[Node]], Dict]:
     pass
 
 

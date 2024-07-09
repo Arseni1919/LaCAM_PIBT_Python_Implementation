@@ -46,6 +46,9 @@ class Node:
     def __hash__(self):
         return hash(self.xy_name)
 
+    def __str__(self):
+        return self.xy_name
+
     def get_pattern(self) -> dict:
         return {'x': self.x, 'y': self.y, 'neighbours': self.neighbours}
 
@@ -85,6 +88,8 @@ class AgentAlg:
 
     def __eq__(self, other):
         return self.num == other.num
+
+
 # -------------------------------------------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -328,6 +333,18 @@ def two_plans_have_no_confs(path1: List[Node], path2: List[Node]):
         prev1 = vertex1
         prev2 = vertex2
     return True
+
+
+def create_agents(
+        start_nodes: List[Node], goal_nodes: List[Node]
+) -> Tuple[List[AgentAlg], Dict[str, AgentAlg]]:
+    agents: List[AgentAlg] = []
+    agents_dict: Dict[str, AgentAlg] = {}
+    for num, (s_node, g_node) in enumerate(zip(start_nodes, goal_nodes)):
+        new_agent = AgentAlg(num, s_node, g_node)
+        agents.append(new_agent)
+        agents_dict[new_agent.name] = new_agent
+    return agents, agents_dict
 
 
 # -------------------------------------------------------------------------------------------------------------------- #

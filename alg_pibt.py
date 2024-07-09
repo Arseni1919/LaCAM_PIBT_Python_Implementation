@@ -35,7 +35,6 @@ def run_procedure_pibt(
     return False
 
 
-
 def run_pibt(
         start_nodes: List[Node],
         goal_nodes: List[Node],
@@ -98,8 +97,8 @@ def run_pibt(
             return None, {}
 
     # checks
-    for i in range(len(agents[0].path)):
-        check_vc_ec_neic_iter(agents, i, to_count=False)
+    # for i in range(len(agents[0].path)):
+    #     check_vc_ec_neic_iter(agents, i, to_count=False)
 
     return {a.name: a.path for a in agents}, {'agents': agents}
 

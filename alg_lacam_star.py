@@ -120,9 +120,6 @@ def run_lacam_star(
             f'{'*' * 10}',
             end='')
 
-    # checks
-    # for i in range(len(agents[0].path)):
-    #     check_vc_ec_neic_iter(agents, i, to_count=False)
     if N_goal is not None and len(open_list) == 0:
         print(f"\nreach optimal solution, cost={N_goal.g}")
     elif N_goal is not None:
@@ -137,12 +134,17 @@ def run_lacam_star(
     paths_dict = backtrack(N_goal)
     for a_name, path in paths_dict.items():
         agents_dict[a_name].path = path
+    # checks
+    for i in range(len(agents[0].path)):
+        check_vc_ec_neic_iter(agents, i, to_count=False)
     return paths_dict, {'agents': agents}
 
 
 @use_profiler(save_dir='stats/alg_lacam_star.pstat')
 def main():
-    params = {'max_time': 20, 'alg_name': 'LaCAM', 'flag_star': True}
+    flag_star: bool = True
+    # flag_star: bool = False
+    params = {'max_time': 100, 'alg_name': 'LaCAM', 'flag_star': flag_star}
     run_mapf_alg(alg=run_lacam_star, params=params)
 
 

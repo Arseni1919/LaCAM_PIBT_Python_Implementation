@@ -49,6 +49,9 @@ class Node:
     def __str__(self):
         return self.xy_name
 
+    def __repr__(self):
+        return self.xy_name
+
     def get_pattern(self) -> dict:
         return {'x': self.x, 'y': self.y, 'neighbours': self.neighbours}
 
@@ -78,6 +81,9 @@ class AgentAlg:
         self.curr_node = self.path[i_time]
 
     def __str__(self):
+        return self.name
+
+    def __repr__(self):
         return self.name
 
     def __lt__(self, other: Self):
@@ -287,6 +293,40 @@ def check_vc_ec_neic_iter(agents: list | Deque, iteration: int, to_count: bool =
                 collisions += 1
     assert agents[-1].path[iteration].xy_name in agents[-1].path[max(0, iteration - 1)].neighbours, f'[i: {iteration}] wow wow wow! Not nei pos!'
     return collisions
+
+
+def check_configs(
+        agents: List[AgentAlg],
+        config_from: Dict[str, Node],
+        config_to: Dict[str, Node],
+        final_check: bool = True
+) -> None:
+    if final_check:
+        for agent in agents:
+            assert agent.name in config_from
+            assert agent.name in config_to
+    for a1, a2 in combinations(agents, 2):
+        if a1.name not in config_to or a2.name not in config_to:
+            continue
+        # vertex conf
+        from_node_1: Node = config_from[a1.name]
+        to_node_1: Node = config_to[a1.name]
+        from_node_2: Node = config_from[a2.name]
+        to_node_2: Node = config_to[a2.name]
+
+        # vc
+        assert from_node_1 != from_node_2, f' vc: {a1.name}-{a2.name} in {from_node_1.xy_name}'
+        assert to_node_1 != to_node_2, f' vc: {a1.name}-{a2.name} in {to_node_2.xy_name}'
+
+        # edge conf
+        edge1 = (from_node_1.x, from_node_1.y, to_node_1.x, to_node_1.y)
+        edge2 = (to_node_2.x, to_node_2.y, from_node_2.x, from_node_2.y)
+        assert edge1 != edge2, f'ec: {a1.name}-{a2.name} in {edge1}'
+
+        # nei conf
+        assert from_node_1.xy_name in to_node_1.neighbours, f'neic {a1.name}: {from_node_1.xy_name} not nei of {to_node_1.xy_name}'
+        assert from_node_2.xy_name in to_node_2.neighbours, f'neic {a2.name}: {from_node_2.xy_name} not nei of {to_node_2.xy_name}'
+
 
 
 def ranges_intersect(range1, range2):

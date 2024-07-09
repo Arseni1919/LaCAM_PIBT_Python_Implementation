@@ -20,6 +20,8 @@ def run_procedure_pibt(
             continue
         if agent_j is not None and config_from[agent_j.name] == nei_node:
             continue
+        if there_is_ec(agent_i, nei_node, config_from, config_to):
+            continue
         if nei_node in blocked_nodes:
             continue
         config_to[agent_i.name] = nei_node
@@ -97,8 +99,8 @@ def run_pibt(
             return None, {}
 
     # checks
-    # for i in range(len(agents[0].path)):
-    #     check_vc_ec_neic_iter(agents, i, to_count=False)
+    for i in range(len(agents[0].path)):
+        check_vc_ec_neic_iter(agents, i, to_count=False)
 
     return {a.name: a.path for a in agents}, {'agents': agents}
 

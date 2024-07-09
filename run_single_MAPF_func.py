@@ -10,11 +10,11 @@ def run_mapf_alg(alg, params):
     # img_dir = 'empty-32-32.map'
     # img_dir = 'random-32-32-10.map'
     # img_dir = 'random-32-32-20.map'
-    # img_dir = 'room-32-32-4.map'
+    img_dir = 'room-32-32-4.map'
     # img_dir = 'maze-32-32-2.map'
-    img_dir = 'maze-32-32-4.map'
+    # img_dir = 'maze-32-32-4.map'
 
-    n_agents = 200
+    n_agents = 330
 
     to_render: bool = True
     # to_render: bool = False
@@ -30,6 +30,7 @@ def run_mapf_alg(alg, params):
     start_nodes: List[Node] = random.sample(nodes, n_agents)
     goal_nodes: List[Node] = random.sample(nodes, n_agents)
 
+    params['img_np'] = img_np
     paths_dict, info = alg(
         start_nodes, goal_nodes, nodes, nodes_dict, h_dict, map_dim, params
     )

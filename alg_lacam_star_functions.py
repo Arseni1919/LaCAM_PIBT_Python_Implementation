@@ -1,6 +1,5 @@
 from globals import *
 from alg_pibt import run_procedure_pibt
-# from alg_lacam_funcitons import *
 
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -22,6 +21,12 @@ class LowLevelNodeStar:
         self.depth = depth
         self.who_list: List[AgentAlg] = []
         self.where_list: List[Node] = []
+
+    def __str__(self):
+        return f'~ depth={self.depth}, who_list={self.who_list}, where_list={self.where_list} ~'
+
+    def __repr__(self):
+        return f'~ depth={self.depth}, who_list={self.who_list}, where_list={self.where_list} ~'
 
 
 class HighLevelNodeStar:
@@ -50,6 +55,9 @@ class HighLevelNodeStar:
         return self.name == other.name
 
     def __str__(self):
+        return self.name
+
+    def __repr__(self):
         return self.name
 
     def __hash__(self):
@@ -144,6 +152,22 @@ def get_new_config(
     config_to: Dict[str, Node] = {}
     for k in range(C.depth):
         config_to[C.who_list[k].name] = C.where_list[k]
+
+    # prep conf check
+    for agent1, agent2 in combinations(N.order, 2):
+        node_from_1 = config_from[agent1.name]
+        node_from_2 = config_from[agent2.name]
+        if node_from_1 == node_from_2:
+            return None
+        if agent1.name in config_to and agent2.name in config_to:
+            node_to_1 = config_to[agent1.name]
+            node_to_2 = config_to[agent2.name]
+            if node_to_1 == node_to_2:
+                return None
+            edge1 = (node_from_1.x, node_from_1.y, node_to_1.x, node_to_1.y)
+            edge2 = (node_to_2.x, node_to_2.y, node_from_2.x, node_from_2.y)
+            if edge1 == edge2:
+                return None
 
     # apply PIBT
     for agent in N.order:

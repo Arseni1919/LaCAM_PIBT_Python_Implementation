@@ -28,8 +28,8 @@ def get_sorted_nei_nodes(
     nei_nodes: List[Node] = [nodes_dict[n_name] for n_name in config_from[agent.name].neighbours]
     random.shuffle(nei_nodes)
 
-    def get_nei_v(n: Node):
-        return h_goal_np[n.x, n.y]
+    def get_nei_v(n: Node) -> float:
+        return float(h_goal_np[n.x, n.y])
 
     nei_nodes.sort(key=get_nei_v)
     return nei_nodes
@@ -55,6 +55,24 @@ def get_agent_k(
         if n_f_node == nei_node and a_f_name not in config_to:
             return agents_dict[a_f_name]
     return None
+
+
+def there_is_ec(
+        agent_i: AgentAlg,
+        nei_node: Node,
+        config_from: Dict[str, Node],
+        config_to: Dict[str, Node],
+) -> bool:
+    node_from = config_from[agent_i.name]
+    for other_name, other_f_node in config_from.items():
+        if other_name == agent_i.name:
+            continue
+        if other_name not in config_to:
+            continue
+        other_t_node = config_to[other_name]
+        if other_f_node == nei_node and other_t_node == node_from:
+            return True
+    return False
 
 
 

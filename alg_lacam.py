@@ -16,6 +16,12 @@ def run_lacam(
 
     max_time = params['max_time']
     alg_name = params['alg_name']
+    to_render: bool = params['to_render']
+    img_np: np.ndarray = params['img_np']
+
+    if to_render:
+        fig, ax = plt.subplots(1, 2, figsize=(14, 7))
+        plot_rate = 0.001
 
     start_time = time.time()
 
@@ -40,12 +46,12 @@ def run_lacam(
 
         if N.name == config_goal_name:
 
-            # checks
-            # for i in range(len(agents[0].path)):
-            #     check_vc_ec_neic_iter(agents, i, to_count=False)
             paths_dict = backtrack(N)
             for a_name, path in paths_dict.items():
                 agents_dict[a_name].path = path
+            # checks
+            for i in range(len(agents[0].path)):
+                check_vc_ec_neic_iter(agents, i, to_count=False)
             return paths_dict, {'agents': agents}
 
         # low-level search end
@@ -70,6 +76,8 @@ def run_lacam(
         if get_config_name(config_new) in explored_dict:
             continue
 
+        # check_configs(N.order, N.config, config_new)
+
         order, finished = get_order(config_new, N)
         N_new: HighLevelNode = HighLevelNode(config=config_new, tree=deque([get_C_init()]), order=order, parent=N, finished=finished)
         open_list.appendleft(N_new)
@@ -81,6 +89,19 @@ def run_lacam(
             f'\r{'*' * 10} | [{alg_name}] {iteration=: <3} | finished: {N_new.finished}/{n_agents: <3} | runtime: {runtime: .2f} seconds | {'*' * 10}',
             end='')
         iteration += 1
+        if to_render:
+            # update curr nodes
+            for a in N.order:
+                a.curr_node = N.config[a.name]
+            # plot the iteration
+            i_agent = agents[0]
+            plot_info = {
+                'img_np': img_np,
+                'agents': agents,
+                'i_agent': i_agent,
+            }
+            plot_step_in_env(ax[0], plot_info)
+            plt.pause(0.001)
 
         if runtime > max_time:
             return None, {'agents': agents}
@@ -90,7 +111,9 @@ def run_lacam(
 
 @use_profiler(save_dir='stats/alg_lacam.pstat')
 def main():
-    params = {'max_time': 1000, 'alg_name': 'LaCAM'}
+    # to_render = True
+    to_render = False
+    params = {'max_time': 1000, 'alg_name': 'LaCAM', 'to_render': to_render}
     run_mapf_alg(alg=run_lacam, params=params)
 
 

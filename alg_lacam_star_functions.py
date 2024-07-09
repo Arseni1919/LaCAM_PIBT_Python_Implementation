@@ -52,6 +52,9 @@ class HighLevelNodeStar:
     def __str__(self):
         return self.name
 
+    def __hash__(self):
+        return self.name.__hash__()
+
 # -------------------------------------------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -150,6 +153,38 @@ def get_new_config(
                 return None
     return config_to
 
+
+def get_edge_cost(
+        agents: List[AgentAlg],
+        config_from: Dict[str, Node],
+        config_to: Dict[str, Node],
+):
+    # e.g., \sum_i | not (Q_from[i] == Q_to[k] == g_i) |
+    cost = 0
+    for agent in agents:
+        if not (agent.goal_node == config_from[agent.name] == config_to[agent.name]):
+            cost += 1
+    return cost
+
+
+def get_h_value(
+        config: Dict[str, Node],
+        h_dict: Dict[str, np.ndarray],
+        agents: List[AgentAlg]
+) -> int:
+    # e.g., \sum_i dist(Q[i], g_i)
+    cost = 0
+    for agent in agents:
+        goal_np = h_dict[agent.goal_node_name]
+        curr_n = config[agent.name]
+        c: float = float(goal_np[curr_n.x, curr_n.y])
+        cost += c
+    return cost
+
+
+def time_is_good(start_time: int | float, max_time: int) -> bool:
+    runtime = time.time() - start_time
+    return runtime < max_time
 
 
 

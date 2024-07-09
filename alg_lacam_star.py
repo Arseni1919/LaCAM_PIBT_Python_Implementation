@@ -38,7 +38,7 @@ def run_lacam_star(
     explored_dict[N_init.name] = N_init
 
     iteration = 0
-    while len(open_list) > 0:
+    while len(open_list) > 0 and time_is_good(start_time, max_time):
         N: HighLevelNodeStar = open_list[0]
 
         if N_goal is None and N.name == config_goal_name:
@@ -82,10 +82,10 @@ def run_lacam_star(
             while len(D) > 0 and flag_star:
                 N_from = D.popleft()
                 for N_to in N_from.neigh:
-                    g = N_from.g + get_edge_cost(N_from.config, N_to.config)
+                    g = N_from.g + get_edge_cost(agents, N_from.config, N_to.config)
                     if g < N_to.g:
                         if N_goal is not None and N_to is N_goal:
-                            print(f"cost update: {N_goal.g:4d} -> {g:4d}")
+                            print(f"\ncost update: {N_goal.g:4d} -> {g:4d}")
                         N_to.g = g
                         N_to.f = N_to.g + N_to.h
                         N_to.parent = N_from
@@ -100,8 +100,8 @@ def run_lacam_star(
                 tree=deque([get_C_init()]),
                 order=order,
                 parent=N,
-                g=N.g + get_edge_cost(N.config, config_new),
-                h=get_h_value(config_start),
+                g=N.g + get_edge_cost(agents, N.config, config_new),
+                h=get_h_value(config_new, h_dict, agents),
                 finished=finished
             )
             N.neigh.add(N_new)
@@ -113,23 +113,25 @@ def run_lacam_star(
         # print + time check
         runtime = time.time() - start_time
         print(
-            f'\r{'*' * 10} | [{alg_name}] {iteration=: <3} | finished: {N.finished}/{n_agents: <3} | runtime: {runtime: .2f} seconds | {'*' * 10}',
+            f'\r{'*' * 10} | '
+            f'[{alg_name}{'*' if flag_star else ''}] {iteration=: <3} | '
+            f'finished: {N.finished}/{n_agents: <3} | '
+            f'runtime: {runtime: .2f} seconds | '
+            f'{'*' * 10}',
             end='')
-        if runtime > max_time:
-            return None, {'agents': agents}
 
     # checks
     # for i in range(len(agents[0].path)):
     #     check_vc_ec_neic_iter(agents, i, to_count=False)
     if N_goal is not None and len(open_list) == 0:
-        print(f"reach optimal solution, cost={N_goal.g}")
+        print(f"\nreach optimal solution, cost={N_goal.g}")
     elif N_goal is not None:
-        print(f"suboptimal solution, cost={N_goal.g}")
+        print(f"\nsuboptimal solution, cost={N_goal.g}")
     elif len(open_list) == 0:
-        print("detected unsolvable instance")
+        print("\ndetected unsolvable instance")
         return None, {'agents': agents}
     else:
-        print("failure due to timeout")
+        print("\nfailure due to timeout")
         return None, {'agents': agents}
 
     paths_dict = backtrack(N_goal)
@@ -140,7 +142,7 @@ def run_lacam_star(
 
 @use_profiler(save_dir='stats/alg_lacam_star.pstat')
 def main():
-    params = {'max_time': 1000, 'alg_name': 'LaCAM*', 'flag_star': True}
+    params = {'max_time': 20, 'alg_name': 'LaCAM', 'flag_star': True}
     run_mapf_alg(alg=run_lacam_star, params=params)
 
 

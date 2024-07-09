@@ -70,6 +70,7 @@ def run_lacam_star(
                 N.tree.append(C_new)
 
         config_new = get_new_config(N, C, agents_dict, nodes_dict, h_dict)
+        # check_configs(N.order, N.config, config_new)
         if config_new is None:
             continue
         config_new_name = get_config_name(config_new)
@@ -104,9 +105,6 @@ def run_lacam_star(
                 h=get_h_value(config_new, h_dict, agents),
                 finished=finished
             )
-
-            check_configs(N.order, N.config, config_new)
-
             N.neigh.add(N_new)
             open_list.appendleft(N_new)
             explored_dict[N_new.name] = N_new

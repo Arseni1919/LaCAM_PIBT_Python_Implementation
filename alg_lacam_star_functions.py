@@ -157,7 +157,7 @@ def get_new_config(
         node = C.where_list[k]
         config_to[agent.name] = node
         # vc
-        if node.xy_name in config_to:
+        if node.xy_name in occupied_to:
             return None
         occupied_to[node.xy_name] = agent
         # ec

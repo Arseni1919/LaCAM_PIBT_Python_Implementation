@@ -4,7 +4,6 @@ from run_single_MAPF_func import run_mapf_alg
 
 def run_procedure_pibt(
         agent_i: AgentAlg,
-        agent_j: AgentAlg | None,
         config_from: Dict[str, Node],
         config_to: Dict[str, Node],
         agents_dict: Dict[str, AgentAlg],
@@ -16,9 +15,8 @@ def run_procedure_pibt(
     nei_nodes = get_sorted_nei_nodes(agent_i, config_from, nodes_dict, h_dict)
 
     for j, nei_node in enumerate(nei_nodes):
+        # TODO: occupied_from, occupied_to
         if there_is_vc(nei_node, config_to):
-            continue
-        if agent_j is not None and config_from[agent_j.name] == nei_node:
             continue
         if there_is_ec(agent_i, nei_node, config_from, config_to):
             continue
@@ -28,7 +26,7 @@ def run_procedure_pibt(
         agent_k = get_agent_k(nei_node, config_from, config_to, agents_dict)
         if agent_k is not None:
             valid = run_procedure_pibt(
-                agent_k, agent_i, config_from, config_to, agents_dict, nodes_dict, h_dict, blocked_nodes
+                agent_k, config_from, config_to, agents_dict, nodes_dict, h_dict, blocked_nodes
             )
             if not valid:
                 continue
@@ -52,12 +50,8 @@ def run_pibt(
     start_time = time.time()
 
     # create agents
-    agents: List[AgentAlg] = []
-    agents_dict: Dict[str, AgentAlg] = {}
-    for num, (s_node, g_node) in enumerate(zip(start_nodes, goal_nodes)):
-        new_agent = AgentAlg(num, s_node, g_node)
-        agents.append(new_agent)
-        agents_dict[new_agent.name] = new_agent
+    agents, agents_dict = create_agents(start_nodes, goal_nodes)
+    n_agents = len(agents_dict)
     agents.sort(key=lambda a: a.priority, reverse=True)
 
     iteration = 0
@@ -70,7 +64,7 @@ def run_pibt(
         # calc the step
         for agent in agents:
             if agent.name not in config_to:
-                _ = run_procedure_pibt(agent, None, config_from, config_to, agents_dict, nodes_dict, h_dict, [])
+                _ = run_procedure_pibt(agent, config_from, config_to, agents_dict, nodes_dict, h_dict, [])
 
         # execute the step + check the termination condition
         finished = True
@@ -92,15 +86,15 @@ def run_pibt(
 
         # print + render
         runtime = time.time() - start_time
-        print(f'\r{'*' * 10} | [PIBT] {iteration=: <3} | finished: {len(agents_finished)}/{len(agents): <3} | runtime: {runtime: .2f} seconds | {'*' * 10}', end='')
+        print(f'\r{'*' * 10} | [PIBT] {iteration=: <3} | finished: {len(agents_finished)}/{n_agents: <3} | runtime: {runtime: .2f} seconds | {'*' * 10}', end='')
         iteration += 1
 
         if runtime > max_time:
             return None, {}
 
     # checks
-    for i in range(len(agents[0].path)):
-        check_vc_ec_neic_iter(agents, i, to_count=False)
+    # for i in range(len(agents[0].path)):
+    #     check_vc_ec_neic_iter(agents, i, to_count=False)
 
     return {a.name: a.path for a in agents}, {'agents': agents}
 

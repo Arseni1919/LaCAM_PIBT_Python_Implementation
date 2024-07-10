@@ -36,7 +36,7 @@ def run_lacam_star(
     explored_dict: Dict[str, HighLevelNodeStar] = {}   # stack
     N_goal: HighLevelNodeStar | None = None
 
-    init_order = get_init_order(agents, config_start, h_dict)
+    init_order = get_init_order(agents)
     N_init: HighLevelNodeStar = HighLevelNodeStar(
         config=config_start, tree=deque([get_C_init()]), order=init_order, parent=None
     )
@@ -79,6 +79,7 @@ def run_lacam_star(
         # check_configs(N.order, N.config, config_new)
         if config_new is None:
             continue
+
         config_new_name = get_config_name(config_new)
         if config_new_name in explored_dict:
             N_known = explored_dict[config_new_name]
@@ -121,12 +122,15 @@ def run_lacam_star(
         runtime = time.time() - start_time
         print(
             f'\r{'*' * 10} | '
-            f'[{alg_name}{'*' if flag_star else ''}] {iteration=: <3} | '
+            f'[{alg_name}{'*' if flag_star else '-'}] {iteration=: <3} | '
             f'finished: {N.finished}/{n_agents: <3} | '
             f'runtime: {runtime: .2f} seconds | '
+            f'{len(open_list)=} | '
+            f'{len(explored_dict)=} | '
+            f'{len(N.tree)=} | '
             f'{'*' * 10}',
             end='')
-        if to_render:
+        if to_render and iteration > 200:
             # update curr nodes
             for a in N.order:
                 a.curr_node = N.config[a.name]
@@ -167,8 +171,8 @@ def main():
     # flag_star: bool = True
     flag_star: bool = False
 
-    to_render = True
-    # to_render = False
+    # to_render = True
+    to_render = False
 
     params = {'max_time': 180, 'alg_name': 'LaCAM', 'flag_star': flag_star, 'to_render': to_render}
     run_mapf_alg(alg=run_lacam_star, params=params)

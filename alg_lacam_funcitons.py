@@ -1,3 +1,5 @@
+import random
+
 from globals import *
 from alg_pibt import run_procedure_pibt
 
@@ -36,23 +38,25 @@ class HighLevelNode:
             tree: Deque[LowLevelNode],
             order: List[AgentAlg],
             parent: Self | None,
-            finished: int = 0
+            finished: int = 0,
+            i: int = -1,
     ):
         self.config: Dict[str, Node] = config
         self.tree: Deque[LowLevelNode] = tree
         self.order: List[AgentAlg] = order
         self.parent: Self | None = parent
         self.finished: int = finished
+        self.i: int = i
         self.name = get_config_name(self.config)
 
     def __eq__(self, other: Self):
         return self.name == other.name
 
     def __str__(self):
-        return self.name
+        return f'i={self.i}, {self.name}'
 
     def __repr__(self):
-        return self.name
+        return f'i={self.i}, {self.name}'
 
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -77,33 +81,33 @@ def get_C_child(
     return C_new
 
 
-def get_init_order(
-        agents: List[AgentAlg],
-        config: Dict[str, Node],
-        h_dict: Dict[str, np.ndarray]
-) -> List[AgentAlg]:
-    def get_h_value(a: AgentAlg) -> float:
-        curr_node = config[a.name]
-        h_map = h_dict[a.goal_node.xy_name]
-        res: float = float(h_map[curr_node.x, curr_node.y])
-        return res
+# def get_h_value(a: AgentAlg) -> float:
+#     curr_node = config[a.name]
+#     h_map = h_dict[a.goal_node.xy_name]
+#     res: float = float(h_map[curr_node.x, curr_node.y])
+#     return res
+
+
+def get_init_order(agents: List[AgentAlg]) -> List[AgentAlg]:
     out_list: List[AgentAlg] = agents[:]
-    out_list.sort(key=get_h_value, reverse=True)
+    out_list.sort(key=lambda a: a.priority, reverse=True)
     return out_list
 
 
 def get_order(
         config_new: Dict[str, Node],
-        N: HighLevelNode
+        N: HighLevelNode,
 ) -> Tuple[List[AgentAlg], int]:
-    finished: List[AgentAlg] = []
-    unfinished: List[AgentAlg] = []
-    for a in N.order:
-        if config_new[a.name] == a.goal_node:
-            finished.append(a)
+    out_list: List[AgentAlg] = N.order[:]
+    finished = 0
+    for i in out_list:
+        if config_new[i.name] == i.goal_node:
+            i.priority = i.init_priority
+            finished += 1
         else:
-            unfinished.append(a)
-    return [*unfinished, *finished], len(finished)
+            i.priority += 1
+    out_list.sort(key=lambda a: a.priority, reverse=True)
+    return out_list, finished
 
 
 def get_config_name(config: Dict[str, Node]):
@@ -161,7 +165,7 @@ def get_new_config(
     # apply PIBT
     for agent in N.order:
         if agent.name not in config_to:
-            success = run_procedure_pibt(agent, None, config_from, config_to, agents_dict, nodes_dict, h_dict, [])
+            success = run_procedure_pibt(agent, config_from, config_to, agents_dict, nodes_dict, h_dict, [])
             if not success:
                 return None
     return config_to

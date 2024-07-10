@@ -1,5 +1,6 @@
 from globals import *
 from alg_pibt import run_procedure_pibt
+from alg_lacam_funcitons import get_init_order, get_order, get_config_name
 
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -85,46 +86,6 @@ def get_C_child(
     return C_new
 
 
-def get_init_order(
-        agents: List[AgentAlg],
-        config: Dict[str, Node],
-        h_dict: Dict[str, np.ndarray]
-) -> List[AgentAlg]:
-    def get_h_value(a: AgentAlg) -> float:
-        curr_node = config[a.name]
-        h_map = h_dict[a.goal_node.xy_name]
-        res: float = float(h_map[curr_node.x, curr_node.y])
-        return res
-    out_list: List[AgentAlg] = agents[:]
-    out_list.sort(key=get_h_value, reverse=True)
-    return out_list
-
-
-def get_order(
-        config_new: Dict[str, Node],
-        N: HighLevelNodeStar
-) -> Tuple[List[AgentAlg], int]:
-    finished: List[AgentAlg] = []
-    unfinished: List[AgentAlg] = []
-    for a in N.order:
-        if config_new[a.name] == a.goal_node:
-            finished.append(a)
-        else:
-            unfinished.append(a)
-    return [*unfinished, *finished], len(finished)
-
-
-def get_config_name(config: Dict[str, Node]):
-    assert len(config) > 0
-    k_list = list(config.keys())
-    k_list.sort()
-    name = ''
-    for k in k_list:
-        v = config[k]
-        name += v.xy_name + '-'
-    return name[:-1]
-
-
 def backtrack(N: HighLevelNodeStar) -> Dict[str, List[Node]]:
     paths_deque_dict: Dict[str, Deque[Node]] = {k: deque([v]) for k, v in N.config.items()}
     parent: HighLevelNodeStar = N.parent
@@ -169,7 +130,7 @@ def get_new_config(
     # apply PIBT
     for agent in N.order:
         if agent.name not in config_to:
-            success = run_procedure_pibt(agent, None, config_from, config_to, agents_dict, nodes_dict, h_dict, [])
+            success = run_procedure_pibt(agent, config_from, config_to, agents_dict, nodes_dict, h_dict, [])
             if not success:
                 return None
     return config_to
@@ -201,11 +162,6 @@ def get_h_value(
         c: float = float(goal_np[curr_n.x, curr_n.y])
         cost += c
     return cost
-
-
-def time_is_good(start_time: int | float, max_time: int) -> bool:
-    runtime = time.time() - start_time
-    return runtime < max_time
 
 
 

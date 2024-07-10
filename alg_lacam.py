@@ -35,13 +35,16 @@ def run_lacam(
 
     open_list: Deque[HighLevelNode] = deque()  # stack
     explored_dict: Dict[str, HighLevelNode] = {}   # stack
-    init_order = get_init_order(agents, config_start, h_dict)
-    N_init: HighLevelNode = HighLevelNode(config=config_start, tree=deque([get_C_init()]), order=init_order, parent=None)
+
+    init_order = get_init_order(agents)
+    N_init: HighLevelNode = HighLevelNode(
+        config=config_start, tree=deque([get_C_init()]), order=init_order, parent=None
+    )
     open_list.appendleft(N_init)
     explored_dict[N_init.name] = N_init
 
     iteration = 0
-    while len(open_list) > 0:
+    while len(open_list) > 0 and time_is_good(start_time, max_time):
         N: HighLevelNode = open_list[0]
 
         if N.name == config_goal_name:
@@ -71,15 +74,27 @@ def run_lacam(
                 N.tree.append(C_new)
 
         config_new = get_new_config(N, C, agents_dict, nodes_dict, h_dict)
+        # check_configs(N.order, N.config, config_new)
         if config_new is None:
             continue
-        if get_config_name(config_new) in explored_dict:
+
+        config_new_name = get_config_name(config_new)
+        if config_new_name in explored_dict:
+            N_known = explored_dict[config_new_name]
+            open_list.appendleft(N_known)  # typically helpful
             continue
 
         # check_configs(N.order, N.config, config_new)
 
         order, finished = get_order(config_new, N)
-        N_new: HighLevelNode = HighLevelNode(config=config_new, tree=deque([get_C_init()]), order=order, parent=N, finished=finished)
+        N_new: HighLevelNode = HighLevelNode(
+            config=config_new,
+            tree=deque([get_C_init()]),
+            order=order,
+            parent=N,
+            finished=finished,
+            i=iteration
+        )
         open_list.appendleft(N_new)
         explored_dict[N_new.name] = N_new
 
@@ -92,10 +107,11 @@ def run_lacam(
             f'runtime: {runtime: .2f} seconds | '
             f'{len(open_list)=} | '
             f'{len(explored_dict)=} | '
+            f'{len(N.tree)=} | '
             f'{'*' * 10}',
             end='')
         iteration += 1
-        if to_render:
+        if to_render and iteration > 180:
             # update curr nodes
             for a in N.order:
                 a.curr_node = N.config[a.name]
@@ -109,16 +125,15 @@ def run_lacam(
             plot_step_in_env(ax[0], plot_info)
             plt.pause(0.001)
 
-        if runtime > max_time:
-            return None, {'agents': agents}
-
     return None, {'agents': agents}
 
 
 @use_profiler(save_dir='stats/alg_lacam.pstat')
 def main():
+
     # to_render = True
     to_render = False
+
     params = {'max_time': 1000, 'alg_name': 'LaCAM', 'to_render': to_render}
     run_mapf_alg(alg=run_lacam, params=params)
 

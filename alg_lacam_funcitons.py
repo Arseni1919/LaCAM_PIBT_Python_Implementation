@@ -165,7 +165,11 @@ def get_new_config(
     # apply PIBT
     for agent in N.order:
         if agent.name not in config_to:
-            success = run_procedure_pibt(agent, config_from, config_to, agents_dict, nodes_dict, h_dict, [])
+            success = run_procedure_pibt(
+                agent,
+                config_from, occupied_from,
+                config_to, occupied_to,
+                agents_dict, nodes_dict, h_dict, [])
             if not success:
                 return None
     return config_to

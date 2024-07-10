@@ -5,7 +5,9 @@ from run_single_MAPF_func import run_mapf_alg
 def run_procedure_pibt(
         agent_i: AgentAlg,
         config_from: Dict[str, Node],
+        occupied_from: Dict[str, AgentAlg],
         config_to: Dict[str, Node],
+        occupied_to: Dict[str, AgentAlg],
         agents_dict: Dict[str, AgentAlg],
         nodes_dict: Dict[str, Node],
         h_dict: Dict[str, np.ndarray],
@@ -15,23 +17,35 @@ def run_procedure_pibt(
     nei_nodes = get_sorted_nei_nodes(agent_i, config_from, nodes_dict, h_dict)
 
     for j, nei_node in enumerate(nei_nodes):
-        # TODO: occupied_from, occupied_to
-        if there_is_vc(nei_node, config_to):
+
+        if nei_node.xy_name in occupied_to:
             continue
-        if there_is_ec(agent_i, nei_node, config_from, config_to):
-            continue
+
+        node_from = config_from[agent_i.name]
+        if node_from.xy_name in occupied_to:
+            other_agent = occupied_to[node_from.xy_name]
+            if other_agent != agent_i and config_from[other_agent.name] == nei_node:
+                continue
+
         if nei_node in blocked_nodes:
             continue
+
         config_to[agent_i.name] = nei_node
-        agent_k = get_agent_k(nei_node, config_from, config_to, agents_dict)
+        occupied_to[nei_node.xy_name] = agent_i
+        agent_k = get_agent_k(nei_node, occupied_from, config_to)
         if agent_k is not None:
             valid = run_procedure_pibt(
-                agent_k, config_from, config_to, agents_dict, nodes_dict, h_dict, blocked_nodes
+                agent_k,
+                config_from, occupied_from,
+                config_to, occupied_to,
+                agents_dict, nodes_dict, h_dict, blocked_nodes
             )
             if not valid:
                 continue
         return True
-    config_to[agent_i.name] = config_from[agent_i.name]
+    node_from = config_from[agent_i.name]
+    config_to[agent_i.name] = node_from
+    occupied_to[node_from.xy_name] = agent_i
     return False
 
 
@@ -59,12 +73,19 @@ def run_pibt(
     while not finished:
 
         config_from: Dict[str, Node] = {a.name: a.path[-1] for a in agents}
+        occupied_from: Dict[str, AgentAlg] = {a.path[-1].xy_name: a for a in agents}
         config_to: Dict[str, Node] = {}
+        occupied_to: Dict[str, AgentAlg] = {}
+
 
         # calc the step
         for agent in agents:
             if agent.name not in config_to:
-                _ = run_procedure_pibt(agent, config_from, config_to, agents_dict, nodes_dict, h_dict, [])
+                _ = run_procedure_pibt(
+                    agent,
+                    config_from, occupied_from,
+                    config_to, occupied_to,
+                    agents_dict, nodes_dict, h_dict, [])
 
         # execute the step + check the termination condition
         finished = True
@@ -93,8 +114,8 @@ def run_pibt(
             return None, {}
 
     # checks
-    # for i in range(len(agents[0].path)):
-    #     check_vc_ec_neic_iter(agents, i, to_count=False)
+    for i in range(len(agents[0].path)):
+        check_vc_ec_neic_iter(agents, i, to_count=False)
 
     return {a.name: a.path for a in agents}, {'agents': agents}
 

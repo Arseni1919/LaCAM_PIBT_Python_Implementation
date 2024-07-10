@@ -50,7 +50,7 @@ def run_lacam_star(
         if N_goal is None and N.name == config_goal_name:
 
             N_goal = N
-            print(f"initial solution found, cost={N_goal.g}")
+            print(f"\ninitial solution found, cost={N_goal.g}")
             if not flag_star:
                 break
 
@@ -168,13 +168,13 @@ def run_lacam_star(
 @use_profiler(save_dir='stats/alg_lacam_star.pstat')
 def main():
 
-    # flag_star: bool = True
-    flag_star: bool = False
+    flag_star: bool = True
+    # flag_star: bool = False
 
     # to_render = True
     to_render = False
 
-    params = {'max_time': 180, 'alg_name': 'LaCAM', 'flag_star': flag_star, 'to_render': to_render}
+    params = {'max_time': 30, 'alg_name': 'LaCAM', 'flag_star': flag_star, 'to_render': to_render}
     run_mapf_alg(alg=run_lacam_star, params=params)
 
 

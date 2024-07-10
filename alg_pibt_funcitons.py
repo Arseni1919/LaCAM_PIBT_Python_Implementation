@@ -47,14 +47,18 @@ def there_is_vc(
 
 def get_agent_k(
         nei_node: Node,
-        config_from: Dict[str, Node],
+        occupied_from: Dict[str, AgentAlg],
         config_to: Dict[str, Node],
-        agents_dict: Dict[str, AgentAlg],
 ) -> AgentAlg | None:
-    for a_f_name, n_f_node in config_from.items():
-        if n_f_node == nei_node and a_f_name not in config_to:
-            return agents_dict[a_f_name]
+    if nei_node.xy_name in occupied_from:
+        other_agent = occupied_from[nei_node.xy_name]
+        if other_agent.name not in config_to:
+            return other_agent
     return None
+    # for a_f_name, n_f_node in config_from.items():
+    #     if n_f_node == nei_node and a_f_name not in config_to:
+    #         return agents_dict[a_f_name]
+    # return None
 
 
 def there_is_ec(

@@ -15,6 +15,12 @@ def run_lacam_star(
     max_time: int = params['max_time']
     alg_name: str = params['alg_name']
     flag_star: bool = params['flag_star']
+    to_render: bool = params['to_render']
+    img_np: np.ndarray = params['img_np']
+
+    if to_render:
+        fig, ax = plt.subplots(1, 2, figsize=(14, 7))
+        plot_rate = 0.001
 
     start_time = time.time()
 
@@ -111,7 +117,7 @@ def run_lacam_star(
 
         iteration += 1
 
-        # print + time check
+        # print + render
         runtime = time.time() - start_time
         print(
             f'\r{'*' * 10} | '
@@ -120,6 +126,20 @@ def run_lacam_star(
             f'runtime: {runtime: .2f} seconds | '
             f'{'*' * 10}',
             end='')
+        if to_render:
+            # update curr nodes
+            for a in N.order:
+                a.curr_node = N.config[a.name]
+            # plot the iteration
+            i_agent = agents[0]
+            plot_info = {
+                'img_np': img_np,
+                'agents': agents,
+                'i_agent': i_agent,
+            }
+            plot_step_in_env(ax[0], plot_info)
+            plt.pause(0.001)
+
 
     if N_goal is not None and len(open_list) == 0:
         print(f"\nreach optimal solution, cost={N_goal.g}")
@@ -143,9 +163,14 @@ def run_lacam_star(
 
 @use_profiler(save_dir='stats/alg_lacam_star.pstat')
 def main():
-    flag_star: bool = True
-    # flag_star: bool = False
-    params = {'max_time': 180, 'alg_name': 'LaCAM', 'flag_star': flag_star}
+
+    # flag_star: bool = True
+    flag_star: bool = False
+
+    to_render = True
+    # to_render = False
+
+    params = {'max_time': 180, 'alg_name': 'LaCAM', 'flag_star': flag_star, 'to_render': to_render}
     run_mapf_alg(alg=run_lacam_star, params=params)
 
 

@@ -86,7 +86,13 @@ def run_lacam(
         # print + render
         runtime = time.time() - start_time
         print(
-            f'\r{'*' * 10} | [{alg_name}] {iteration=: <3} | finished: {N_new.finished}/{n_agents: <3} | runtime: {runtime: .2f} seconds | {'*' * 10}',
+            f'\r{'*' * 10} | '
+            f'[{alg_name}] {iteration=: <3} | '
+            f'finished: {N_new.finished}/{n_agents: <3} | '
+            f'runtime: {runtime: .2f} seconds | '
+            f'{len(open_list)=} | '
+            f'{len(explored_dict)=} | '
+            f'{'*' * 10}',
             end='')
         iteration += 1
         if to_render:

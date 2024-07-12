@@ -1,3 +1,5 @@
+import random
+
 from alg_lacam_star_functions import *
 from run_single_MAPF_func import run_mapf_alg
 
@@ -100,6 +102,12 @@ def run_lacam_star(
                         D.append(N_to)
                         if N_goal is not None and N_to.f < N_goal.g:
                             open_list.appendleft(N_to)
+                            # possible improvement:
+                            # if random.random() > 0.001:
+                            #     open_list.appendleft(N_to)
+                            # else:
+                            #     open_list.appendleft(N_init)
+
         else:
             # new configuration
             order, finished = get_order(config_new, N)
@@ -130,7 +138,7 @@ def run_lacam_star(
             f'{len(N.tree)=} | '
             f'{'*' * 10}',
             end='')
-        if to_render and iteration > 200:
+        if to_render and iteration > 0:
             # update curr nodes
             for a in N.order:
                 a.curr_node = N.config[a.name]
@@ -142,7 +150,8 @@ def run_lacam_star(
                 'i_agent': i_agent,
             }
             plot_step_in_env(ax[0], plot_info)
-            plt.pause(0.001)
+            # plt.pause(0.001)
+            plt.pause(5)
 
 
     if N_goal is not None and len(open_list) == 0:
@@ -168,13 +177,13 @@ def run_lacam_star(
 @use_profiler(save_dir='stats/alg_lacam_star.pstat')
 def main():
 
-    flag_star: bool = True
-    # flag_star: bool = False
+    # flag_star: bool = True
+    flag_star: bool = False
 
-    # to_render = True
-    to_render = False
+    to_render = True
+    # to_render = False
 
-    params = {'max_time': 30, 'alg_name': 'LaCAM', 'flag_star': flag_star, 'to_render': to_render}
+    params = {'max_time': 60, 'alg_name': 'LaCAM', 'flag_star': flag_star, 'to_render': to_render}
     run_mapf_alg(alg=run_lacam_star, params=params)
 
 

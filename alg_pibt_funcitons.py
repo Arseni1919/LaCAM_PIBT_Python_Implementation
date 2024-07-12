@@ -1,3 +1,5 @@
+import random
+
 from globals import *
 
 
@@ -20,12 +22,13 @@ from globals import *
 def get_sorted_nei_nodes(
         agent: AgentAlg,
         config_from: Dict[str, Node],
-        nodes_dict: Dict[str, Node],
+        # nodes_dict: Dict[str, Node],
         h_dict: Dict[str, np.ndarray],
 ):
     h_goal_np: np.ndarray = h_dict[agent.goal_node.xy_name]
     # sort C in ascending order of dist(u, gi) where u ∈ C
-    nei_nodes: List[Node] = [nodes_dict[n_name] for n_name in config_from[agent.name].neighbours]
+    # nei_nodes: List[Node] = [nodes_dict[n_name] for n_name in config_from[agent.name].neighbours]
+    nei_nodes: List[Node] = config_from[agent.name].neighbours_nodes[:]
     random.shuffle(nei_nodes)
 
     def get_nei_v(n: Node) -> float:
@@ -75,6 +78,111 @@ def there_is_ec(
         if other_node_from == node_to and other_node_to == node_from:
             return True
     return False
+
+
+def get_next_node(node: Node, blocked: List[Node]) -> Node | None:
+    nei_nodes = node.neighbours_nodes[:]
+    nei_nodes.remove(node)
+    for n in blocked:
+        nei_nodes.remove(n)
+    if len(nei_nodes) == 0:
+        return None
+    return random.choice(nei_nodes)
+
+
+def check_if_swap_required(
+        agent_i: AgentAlg,
+        agent_j: AgentAlg,
+        config_from: Dict[str, Node],
+        h_dict: Dict[str, np.ndarray],
+) -> bool:
+    """
+    This is done by continuously moving i to j’s location while moving j to another vertex not equal to i’s location,
+    ignoring the other agents.
+    The emulation stops in two cases:
+    (i) The swap is not required when j’s location has a degree of more than two.
+    (ii) The swap is required when
+        (1) j’s location has a degree of one,
+        or,
+        (2) when i reaches gi while j’s nearest neighboring vertex toward its goal is gi.
+    """
+    prev_node_i = config_from[agent_i.name]
+    prev_node_j = config_from[agent_j.name]
+    while True:
+
+        next_node_i = prev_node_j
+        next_node_j = get_next_node(prev_node_j, blocked=[prev_node_i])
+
+        if next_node_j is None:
+            return True
+
+        if len(next_node_j.neighbours) > 3:
+            return False
+
+        if next_node_i == agent_i.goal_node:
+            nei_nodes_j = get_sorted_nei_nodes(agent_j, config_from, h_dict)
+            nearest_nei_to_goal_j = nei_nodes_j[0]
+            if nearest_nei_to_goal_j == agent_i.goal_node:
+                return True
+
+        prev_node_i = next_node_i
+        prev_node_j = next_node_j
+
+
+def check_if_swap_possible(
+        agent_i: AgentAlg,
+        agent_j: AgentAlg,
+        config_from: Dict[str, Node],
+) -> bool:
+    """
+    This is done by reversing the emulation direction; that is,
+    continuously moving j to i’s location while moving i to another vertex.
+    It stops in two cases:
+        (i) The swap is possible when i’s location has a degree of more than two.
+        (ii) The swap is impossible when i is on a vertex with degree of one.
+    :return:
+    """
+    prev_node_i = config_from[agent_i.name]
+    prev_node_j = config_from[agent_j.name]
+    while True:
+
+        next_node_j = prev_node_i
+        next_node_i = get_next_node(prev_node_i, blocked=[prev_node_j])
+
+        if next_node_i is None:
+            return False
+
+        if len(next_node_i.neighbours) > 3:
+            return True
+
+        prev_node_i = next_node_i
+        prev_node_j = next_node_j
+
+
+def swap_required_and_possible(
+        agent_i: AgentAlg,
+        first_node: Node,
+        config_from: Dict[str, Node],
+        occupied_from: Dict[str, AgentAlg],
+        h_dict: Dict[str, np.ndarray],
+        with_swap: bool,
+) -> AgentAlg | None:
+    if not with_swap:
+        return None
+    if len(first_node.neighbours) - 1 <= 2 and first_node.xy_name in occupied_from:
+        agent_j: AgentAlg = occupied_from[first_node.xy_name]
+        if agent_j == agent_i:
+            return None
+        # necessity of the swap
+        is_required = check_if_swap_required(agent_i, agent_j, config_from, h_dict)
+        if not is_required:
+            return None
+        # possibility of the swap
+        is_possible = check_if_swap_possible(agent_i, agent_j, config_from)
+        if not is_possible:
+            return None
+        return agent_j
+    return None
 
 
 

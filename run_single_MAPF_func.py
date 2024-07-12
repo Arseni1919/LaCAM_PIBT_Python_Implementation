@@ -7,8 +7,8 @@ def run_mapf_alg(alg, params):
     # set_seed(random_seed_bool=True)
 
     # img_dir = '10_10_my_rand.map'
-    # img_dir = '10_10_my_corridor.map'
     # img_dir = 'empty-32-32.map'
+    # img_dir = '10_10_my_corridor.map'
     # img_dir = 'random-32-32-10.map'
     # img_dir = 'random-32-32-20.map'
     # img_dir = 'room-32-32-4.map'
@@ -31,7 +31,8 @@ def run_mapf_alg(alg, params):
 
     start_nodes: List[Node] = random.sample(nodes, n_agents)
     goal_nodes: List[Node] = random.sample(nodes, n_agents)
-
+    # start_nodes: List[Node] = [nodes_dict['4_0'], nodes_dict['4_1']]
+    # goal_nodes: List[Node] = [nodes_dict['4_1'], nodes_dict['4_0']]
     # start_nodes: List[Node] = [nodes_dict['4_0'], nodes_dict['4_1'], nodes_dict['4_2']]
     # goal_nodes: List[Node] = [nodes_dict['4_1'], nodes_dict['4_0'], nodes_dict['4_2']]
 

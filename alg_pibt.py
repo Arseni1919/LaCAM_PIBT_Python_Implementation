@@ -12,9 +12,17 @@ def run_procedure_pibt(
         nodes_dict: Dict[str, Node],
         h_dict: Dict[str, np.ndarray],
         blocked_nodes: List[Node],
+        with_swap: bool = True
+        # with_swap: bool = False
 ) -> bool:  # valid or invalid
 
-    nei_nodes = get_sorted_nei_nodes(agent_i, config_from, nodes_dict, h_dict)
+    # nei_nodes = get_sorted_nei_nodes(agent_i, config_from, nodes_dict, h_dict)
+    nei_nodes = get_sorted_nei_nodes(agent_i, config_from, h_dict)
+
+    #  j ← swap_required_and_possible
+    agent_j = swap_required_and_possible(agent_i, nei_nodes[0], config_from, occupied_from, h_dict, with_swap)
+    if agent_j is not None:
+        nei_nodes.reverse()
 
     for j, nei_node in enumerate(nei_nodes):
 
@@ -42,6 +50,10 @@ def run_procedure_pibt(
             )
             if not valid:
                 continue
+        if with_swap and nei_node == nei_nodes[0] and agent_j is not None and agent_j.name not in config_to:
+            i_node_from = config_from[agent_i.name]
+            config_to[agent_j.name] = i_node_from
+            occupied_to[i_node_from.xy_name] = agent_j
         return True
     node_from = config_from[agent_i.name]
     config_to[agent_i.name] = node_from

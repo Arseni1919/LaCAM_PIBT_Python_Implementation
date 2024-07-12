@@ -111,7 +111,7 @@ def run_lacam(
             f'{'*' * 10}',
             end='')
         iteration += 1
-        if to_render and iteration > 180:
+        if to_render and iteration > 350:
             # update curr nodes
             for a in N.order:
                 a.curr_node = N.config[a.name]
@@ -124,6 +124,7 @@ def run_lacam(
             }
             plot_step_in_env(ax[0], plot_info)
             plt.pause(0.001)
+            # plt.pause(1)
 
     return None, {'agents': agents}
 
@@ -131,8 +132,8 @@ def run_lacam(
 @use_profiler(save_dir='stats/alg_lacam.pstat')
 def main():
 
-    # to_render = True
-    to_render = False
+    to_render = True
+    # to_render = False
 
     params = {'max_time': 1000, 'alg_name': 'LaCAM', 'to_render': to_render}
     run_mapf_alg(alg=run_lacam, params=params)

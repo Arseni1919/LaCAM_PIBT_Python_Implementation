@@ -53,9 +53,6 @@ class Node:
     def __repr__(self):
         return self.xy_name
 
-    def get_pattern(self) -> dict:
-        return {'x': self.x, 'y': self.y, 'neighbours': self.neighbours}
-
 
 class AgentAlg:
     def __init__(self, num: int, start_node: Node, goal_node: Node):
